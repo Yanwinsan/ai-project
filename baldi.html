@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baldi's Basics Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #gameScreen {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .classroom {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #87ceeb 0%, #e0f6ff 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+        }
+
+        #player {
+            width: 50px;
+            height: 50px;
+            background: #ff6b6b;
+            border-radius: 5px;
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            cursor: move;
+            z-index: 10;
+            border: 3px solid #8b0000;
+        }
+
+        #baldi {
+            width: 50px;
+            height: 50px;
+            background: #fdbf55;
+            border-radius: 5px;
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            z-index: 9;
+            border: 3px solid #cc7700;
+        }
+
+        .principal {
+            width: 50px;
+            height: 50px;
+            background: #333;
+            border-radius: 5px;
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            z-index: 9;
+            border: 3px solid #555;
+        }
+
+        .classroom-text {
+            position: absolute;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.5);
+        }
+
+        #uiPanel {
+            background: #222;
+            padding: 15px 30px;
+            border-top: 3px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .stat {
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-value {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+
+        #controls {
+            font-size: 0.9em;
+            color: #aaa;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #222;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 600px;
+            border: 3px solid #667eea;
+        }
+
+        .modal-content h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .modal-content p {
+            font-size: 1.3em;
+            margin-bottom: 30px;
+            color: #aaa;
+        }
+
+        .problem-question {
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .problem-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: #333;
+            color: #fff;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .problem-input:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #da190b;
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #45a049;
+        }
+
+        .message {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 30px;
+        }
+
+        .message.correct {
+            background: #4caf50;
+            color: white;
+        }
+
+        .message.wrong {
+            background: #f44336;
+            color: white;
+        }
+
+        .notification {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #f44336;
+            padding: 20px 30px;
+            border-radius: 8px;
+            font-size: 1.3em;
+            font-weight: bold;
+            animation: slideIn 0.3s ease;
+            z-index: 50;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                max-width: 90%;
+                padding: 20px;
+            }
+
+            .problem-question {
+                font-size: 1.3em;
+            }
+
+            #uiPanel {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="gameScreen">
+            <div class="classroom">
+                <div id="player">🧑</div>
+                <div id="baldi">👨</div>
+                <div class="classroom-text" id="room">Classroom 1</div>
+            </div>
+            <div id="notification"></div>
+        </div>
+        <div id="uiPanel">
+            <div class="stat">📝 Problems Solved: <span class="stat-value" id="solved">0</span>/7</div>
+            <div class="stat">⏱️ Time: <span class="stat-value" id="timer">00:00</span></div>
+            <div class="stat">💨 Distance: <span class="stat-value" id="distance">--</span>m</div>
+            <div id="controls">Use ARROW KEYS to move • SPACE to answer problems</div>
+        </div>
+    </div>
+
+    <!-- Start Screen Modal -->
+    <div id="startModal" class="modal show">
+        <div class="modal-content">
+            <h1>🎓 Baldi's Basics</h1>
+            <p>Solve 7 math problems and escape from Baldi!</p>
+            <p style="font-size: 1em; margin-bottom: 20px; color: #888;">Move with ARROW KEYS • Press SPACE to answer</p>
+            <button class="btn-primary" onclick="startGame()">Start Game</button>
+        </div>
+    </div>
+
+    <!-- Problem Modal -->
+    <div id="problemModal" class="modal">
+        <div class="modal-content">
+            <p style="color: #888; margin-bottom: 10px;">Problem <span id="problemNumber">0</span>/7</p>
+            <div class="problem-question" id="problemText"></div>
+            <input type="number" id="answerInput" class="problem-input" placeholder="Your answer" autofocus>
+            <div class="message" id="resultMessage" style="display: none;"></div>
+            <div class="button-group">
+                <button class="btn-primary" onclick="submitAnswer()">Submit</button>
+                <button class="btn-danger" onclick="skipProblem()">Skip</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="modal">
+        <div class="modal-content">
+            <h1 id="gameOverTitle">Game Over!</h1>
+            <p id="gameOverText"></p>
+            <p id="finalStats" style="color: #aaa; font-size: 1em;"></p>
+            <button class="btn-primary" onclick="location.reload()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Game Variables
+        const gameScreen = document.getElementById('gameScreen');
+        const player = document.getElementById('player');
+        const baldi = document.getElementById('baldi');
+        const classroom = document.querySelector('.classroom');
+        
+        let gameRunning = false;
+        let playerX = 100;
+        let playerY = 100;
+        let baldiX = window.innerWidth - 150;
+        let baldiY = 100;
+        let baldiSpeed = 0;
+        let problemsSolved = 0;
+        let gameTime = 0;
+        let keys = {};
+        let canMove = true;
+
+        // Math Problems - Generate Randomly
+        function generateRandomProblem() {
+            const operations = ['+', '-', '*', '/'];
+            const operation = operations[Math.floor(Math.random() * operations.length)];
+            let num1, num2, answer;
+
+            switch(operation) {
+                case '+':
+                    num1 = Math.floor(Math.random() * 10) + 1;
+                    num2 = Math.floor(Math.random() * 10) + 1;
+                    answer = num1 + num2;
+                    break;
+                case '-':
+                    num1 = Math.floor(Math.random() * 10) + 1;
+                    num2 = Math.floor(Math.random() * 10) + 1;
+                    answer = num1 - num2;
+                    break;
+                case '*':
+                    // Simpler multiplication: smaller numbers
+                    num1 = Math.floor(Math.random() * 12) + 1;
+                    num2 = Math.floor(Math.random() * 12) + 1;
+                    answer = num1 * num2;
+                    break;
+                case '/':
+                    // Ensure clean division with no decimals
+                    num2 = Math.floor(Math.random() * 12) + 1;
+                    answer = Math.floor(Math.random() * 12) + 1;
+                    num1 = num2 * answer;
+                    break;
+            }
+
+            return {
+                question: `${num1} ${operation} ${num2} = ?`,
+                answer: answer
+            };
+        }
+
+        const problems = [];
+
+        let usedProblems = [];
+        let currentProblem = null;
+
+        function startGame() {
+            document.getElementById('startModal').classList.remove('show');
+            gameRunning = true;
+            playerX = 100;
+            playerY = 100;
+            baldiX = window.innerWidth - 150;
+            baldiY = 100;
+            problemsSolved = 0;
+            gameTime = 0;
+            usedProblems = [];
+            
+            updateUI();
+            gameLoop();
+            timerLoop();
+        }
+
+        function getRandomProblem() {
+            return generateRandomProblem();
+        }
+
+        function showProblem() {
+            canMove = false;
+            currentProblem = getRandomProblem();
+            document.getElementById('problemText').textContent = currentProblem.question;
+            document.getElementById('problemNumber').textContent = problemsSolved + 1;
+            document.getElementById('answerInput').value = '';
+            document.getElementById('resultMessage').style.display = 'none';
+            document.getElementById('problemModal').classList.add('show');
+            document.getElementById('answerInput').focus();
+        }
+
+        function submitAnswer() {
+            const userAnswer = parseInt(document.getElementById('answerInput').value);
+            const isCorrect = userAnswer === currentProblem.answer;
+            
+            const resultMsg = document.getElementById('resultMessage');
+            resultMsg.style.display = 'block';
+            
+            if (isCorrect) {
+                resultMsg.className = 'message correct';
+                resultMsg.textContent = '✓ Correct! Nice job!';
+                problemsSolved++;
+                updateUI();
+                
+                if (problemsSolved >= 7) {
+                    setTimeout(winGame, 1500);
+                } else {
+                    setTimeout(() => {
+                        document.getElementById('problemModal').classList.remove('show');
+                        canMove = true;
+                        baldiSpeed += 0.5;
+                    }, 1500);
+                }
+            } else {
+                resultMsg.className = 'message wrong';
+                resultMsg.textContent = `✗ Wrong! The answer is ${currentProblem.answer}`;
+                baldiSpeed += 2;
+                showNotification('Baldi is getting faster!');
+                setTimeout(() => {
+                    document.getElementById('problemModal').classList.remove('show');
+                    canMove = true;
+                }, 1500);
+            }
+        }
+
+        function skipProblem() {
+            baldiSpeed += 3;
+            showNotification('Baldi is VERY angry!');
+            document.getElementById('problemModal').classList.remove('show');
+            canMove = true;
+        }
+
+        function updateUI() {
+            document.getElementById('solved').textContent = problemsSolved;
+            const distance = Math.round(Math.sqrt(Math.pow(baldiX - playerX, 2) + Math.pow(baldiY - playerY, 2)));
+            document.getElementById('distance').textContent = Math.max(0, distance);
+        }
+
+        function timerLoop() {
+            if (gameRunning) {
+                gameTime++;
+                const minutes = Math.floor(gameTime / 60);
+                const seconds = gameTime % 60;
+                document.getElementById('timer').textContent = 
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                setTimeout(timerLoop, 1000);
+            }
+        }
+
+        function showNotification(text) {
+            const notification = document.getElementById('notification');
+            notification.textContent = text;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            // Move player
+            if (canMove) {
+                if (keys['ArrowUp'] || keys['w']) playerY = Math.max(0, playerY - 5);
+                if (keys['ArrowDown'] || keys['s']) playerY = Math.min(window.innerHeight - 150, playerY + 5);
+                if (keys['ArrowLeft'] || keys['a']) playerX = Math.max(0, playerX - 5);
+                if (keys['ArrowRight'] || keys['d']) playerX = Math.min(window.innerWidth - 50, playerX + 5);
+            }
+
+            if (keys[' '] && canMove) {
+                keys[' '] = false;
+                showProblem();
+            }
+
+            // Move Baldi towards player
+            const dx = playerX - baldiX;
+            const dy = playerY - baldiY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance > 0) {
+                baldiX += (dx / distance) * baldiSpeed;
+                baldiY += (dy / distance) * baldiSpeed;
+            }
+
+            // Check collision with Baldi
+            const collisionDistance = 40;
+            if (distance < collisionDistance) {
+                loseGame();
+                return;
+            }
+
+            // Update positions
+            player.style.left = playerX + 'px';
+            player.style.top = playerY + 'px';
+            baldi.style.left = baldiX + 'px';
+            baldi.style.top = baldiY + 'px';
+
+            updateUI();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function winGame() {
+            gameRunning = false;
+            document.getElementById('gameOverTitle').textContent = '🎉 You Escaped!';
+            document.getElementById('gameOverText').textContent = 'You solved all the problems and escaped!';
+            document.getElementById('finalStats').textContent = `Time: ${String(Math.floor(gameTime / 60)).padStart(2, '0')}:${String(gameTime % 60).padStart(2, '0')}`;
+            document.getElementById('gameOverModal').classList.add('show');
+        }
+
+        function loseGame() {
+            gameRunning = false;
+            document.getElementById('gameOverTitle').textContent = '💀 Caught by Baldi!';
+            document.getElementById('gameOverText').textContent = 'You ran out of time...';
+            document.getElementById('finalStats').textContent = `Problems Solved: ${problemsSolved}/7 • Time: ${String(Math.floor(gameTime / 60)).padStart(2, '0')}:${String(gameTime % 60).padStart(2, '0')}`;
+            document.getElementById('gameOverModal').classList.add('show');
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            if (e.key === ' ') e.preventDefault();
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        // Enter to submit answer
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && document.getElementById('problemModal').classList.contains('show')) {
+                submitAnswer();
+            }
+        });
+
+        // Initialize
+        updateUI();
+    </script>
+</body>
+</html>
